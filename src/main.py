@@ -7,9 +7,11 @@ EMAIL_PATTERN = (
     r"@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+\b"
 )
 
-URL_PATTERN = (
-    r"https?://[A-Za-z0-9.-]+"
-    r"(?:/[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]*)?"
+PHONE_PATTERN = (
+    r"(?<!\d)(?:\+?\d{1,3}[-.\s]?)?"      
+    r"(?:\(?\d{2,4}\)?[-.\s]?)?"           
+    r"\d{2,4}[-.\s]?\d{2,4}[-.\s]?\d{2,4}" 
+    r"(?!\d)"
 )
 
 PHONE_PATTERN = (
@@ -28,18 +30,31 @@ ALU_DOMAINS = (
 )
 
 def extract_data(pattern, text):
-    """Return unique matches found using a regular expression."""
+    """Returns unique matches found using a regular expression."""
     matches = re.findall(pattern, text, re.IGNORECASE)
     return list(dict.fromkeys(matches))
 
 def validate_alu_email(email):
-    """Check whether an email belongs to an approved ALU domain."""
+    """Checks whether an email belongs to an approved ALU domain."""
     return email.lower().endswith(ALU_DOMAINS)
 
 def mask_card(card):
-    """Hide all credit-card digits except the final four."""
+    """Hides all credit-card digits except the final four."""
     digits = re.sub(r"\D", "", card)
     return "**** **** **** " + digits[-4:]
+
+def mask_email(email):
+    """Hides the important part of the email that conatins personal info"""
+    local, _, domain = email.partition("@")
+    if len(local) <= 1:
+        return f"{local}***@{domain}"
+    return f"{local[0]}***@{domain}"
+
+def is_plausible_phone(number):
+    digit_count = sum(c.isdigit() for c in number)
+    return 7 <= digit_count <= 15
+
+phones = [p for p in extract_data(PHONE_PATTERN, clean_text) if is_plausible_phone(p)]
 
 SUSPICIOUS_PATTERNS = [
     r"<script\b",
@@ -62,8 +77,8 @@ def main():
 
     text = input_file.read_text(encoding="utf-8")
 
-    suspicious = contains_suspicious_content(text)
-
+    clean_text, suspicious = filter_suspicious_lines(text)
+    
     emails = extract_data(EMAIL_PATTERN, text)
     urls = extract_data(URL_PATTERN, text)
     phones = extract_data(PHONE_PATTERN, text)
@@ -75,6 +90,8 @@ def main():
     ]
 
     masked_cards = [mask_card(card) for card in cards]
+    masked_emails = [mask_email(e) for e in emails]
+    masked_alu_emails = [mask_email(e) for e in alu_emails]
 
     results = {
         "security": {
