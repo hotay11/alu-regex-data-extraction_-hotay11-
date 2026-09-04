@@ -96,7 +96,7 @@ def main():
 
     clean_text, suspicious = filter_suspicious_lines(text)
     
-        emails = [e for e in extract_data(EMAIL_PATTERN, clean_text)
+    emails = [e for e in extract_data(EMAIL_PATTERN, clean_text)
               if is_well_formed_email(e, clean_text)]
     urls = extract_data(URL_PATTERN, clean_text)
     phones = [p for p in extract_data(PHONE_PATTERN, clean_text)
