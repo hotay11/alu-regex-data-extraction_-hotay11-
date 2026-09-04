@@ -1,0 +1,26 @@
+{
+    "security": {
+        "suspicious_content_detected": true,
+        "input_trusted": false
+    },
+    "emails": [
+        "amina.joseph@gmail.com",
+        "amina.joseph@alueducation.com",
+        "joseph.amina@yahoo.com",
+        "joseph@gmail.com"
+    ],
+    "alu_emails": [
+        "amina.joseph@alueducation.com"
+    ],
+    "urls": [
+        "https://www.alueducation.com/student-support/login"
+    ],
+    "phone_numbers": [
+        "+255 754 123 456",
+        "0754 123 456",
+        "+255-754-123-456"
+    ],
+    "credit_cards": [
+        "**** **** **** 3456"
+    ]
+}

@@ -1,6 +1,6 @@
 import re
 import json
-from pathlib import path
+from pathlib import Path
 
 EMAIL_PATTERN = (
     r"\b[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*"
