@@ -14,9 +14,9 @@ PHONE_PATTERN = (
     r"(?!\d)"
 )
 
-PHONE_PATTERN = (
-    r"(?<!\d)(?:\+255[-\s]?\d{3}[-\s]?\d{3}[-\s]?\d{3}"
-    r"|0\d{3}[-\s]?\d{3}[-\s]?\d{3})(?!\d)"
+URL_PATTERN = (
+    r"https?://[A-Za-z0-9.-]+"
+    r"(?:/[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]*)?"
 )
 
 CARD_PATTERN = (
@@ -50,11 +50,18 @@ def mask_email(email):
         return f"{local}***@{domain}"
     return f"{local[0]}***@{domain}"
 
+def is_well_formed_email(email, full_text):
+    if ".." in email or email.startswith(".") or email.startswith("@"):
+        return False
+    idx = full_text.find(email)
+    if idx > 0 and full_text[idx - 1] in ".@":
+        return False
+    return True
+
 def is_plausible_phone(number):
     digit_count = sum(c.isdigit() for c in number)
     return 7 <= digit_count <= 15
-
-phones = [p for p in extract_data(PHONE_PATTERN, clean_text) if is_plausible_phone(p)]
+    
 
 SUSPICIOUS_PATTERNS = [
     r"<script\b",
@@ -71,6 +78,16 @@ def contains_suspicious_content(text):
             return True
     return False
 
+def filter_suspicious_lines(text):
+    clean_lines = []
+    suspicious_found = False
+    for line in text.splitlines():
+        if contains_suspicious_content(line):
+            suspicious_found = True
+            continue
+        clean_lines.append(line)
+    return "\n".join(clean_lines), suspicious_found
+
 def main():
     input_file = Path("input/raw-text.txt")
     output_file = Path("output/sample-output.json")
@@ -79,10 +96,12 @@ def main():
 
     clean_text, suspicious = filter_suspicious_lines(text)
     
-    emails = extract_data(EMAIL_PATTERN, text)
-    urls = extract_data(URL_PATTERN, text)
-    phones = extract_data(PHONE_PATTERN, text)
-    cards = extract_data(CARD_PATTERN, text)
+        emails = [e for e in extract_data(EMAIL_PATTERN, clean_text)
+              if is_well_formed_email(e, clean_text)]
+    urls = extract_data(URL_PATTERN, clean_text)
+    phones = [p for p in extract_data(PHONE_PATTERN, clean_text)
+              if is_plausible_phone(p)]
+    cards = extract_data(CARD_PATTERN, clean_text)
 
     alu_emails = [
         email for email in emails
@@ -98,8 +117,8 @@ def main():
             "suspicious_content_detected": suspicious,
             "input_trusted": not suspicious
         },
-        "emails": emails,
-        "alu_emails": alu_emails,
+        "emails": masked_emails,
+        "alu_emails": masked_alu_emails,
         "urls": urls,
         "phone_numbers": phones,
         "credit_cards": masked_cards
