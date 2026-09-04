@@ -60,7 +60,8 @@ def is_well_formed_email(email, full_text):
 
 def is_plausible_phone(number):
     digit_count = sum(c.isdigit() for c in number)
-    return 7 <= digit_count <= 15
+    starts_right = number.strip().startswith(("+", "0"))
+    return starts_right and 7 <= digit_count <= 15
     
 
 SUSPICIOUS_PATTERNS = [
