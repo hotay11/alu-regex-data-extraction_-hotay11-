@@ -144,11 +144,11 @@ def main():
 
     # Extracts and validate email addresses
     emails = []
-for match in re.finditer(EMAIL_PATTERN, clean_text, re.IGNORECASE):
-    email = match.group()
-    if is_well_formed_email(email, match.start(), clean_text):
-        if email not in emails:      
-            emails.append(email)
+    for match in re.finditer(EMAIL_PATTERN, clean_text, re.IGNORECASE):
+        email = match.group()
+        if is_well_formed_email(email, match.start(), clean_text):
+            if email not in emails:      
+                emails.append(email)
     
     # Extracts URLs
     urls = extract_data(URL_PATTERN, clean_text)
