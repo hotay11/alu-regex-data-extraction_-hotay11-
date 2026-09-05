@@ -143,7 +143,7 @@ def main():
     clean_text, suspicious = filter_suspicious_lines(text)
     
     # Extracts and validate email addresses
-        emails = []
+    emails = []
     for match in re.finditer(EMAIL_PATTERN, clean_text, re.IGNORECASE):
         email = match.group()
         if is_well_formed_email(email, match.start(), clean_text):
